@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- favicon 用（縮小最適化：背景の微細星を削除・光跡を太く・四芒星を拡大） -->
+  <defs>
+    <linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFF3F7"/>
+    </linearGradient>
+    <linearGradient id="trail" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C2185B"/>
+      <stop offset="100%" stop-color="#E9538A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#ground)"/>
+
+  <path d="M 512 800
+           C 348 664, 240 548, 240 404
+           C 240 288, 332 230, 416 254
+           C 462 268, 498 304, 512 344
+           C 526 304, 562 268, 608 254
+           C 692 230, 784 288, 784 404
+           C 784 480, 748 548, 700 598"
+        fill="none" stroke="url(#trail)" stroke-width="58" stroke-linecap="round"/>
+
+  <path d="M 662 636 Q 662 702 728 702 Q 662 702 662 768 Q 662 702 596 702 Q 662 702 662 636 Z" fill="#C2185B"/>
+
+  <g fill="#FFFFFF" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="512" cy="394" r="66" stroke-width="22"/>
+    <line x1="512" y1="514" x2="512" y2="612" stroke-width="136"/>
+    <line x1="512" y1="524" x2="426" y2="606" stroke-width="68"/>
+    <line x1="512" y1="524" x2="598" y2="606" stroke-width="68"/>
+    <line x1="496" y1="632" x2="468" y2="712" stroke-width="72"/>
+    <line x1="528" y1="632" x2="556" y2="712" stroke-width="72"/>
+  </g>
+  <g fill="#C2185B" stroke="#C2185B" stroke-linecap="round">
+    <circle cx="512" cy="394" r="66" stroke="none"/>
+    <line x1="512" y1="514" x2="512" y2="612" stroke-width="114"/>
+    <line x1="512" y1="524" x2="426" y2="606" stroke-width="46"/>
+    <line x1="512" y1="524" x2="598" y2="606" stroke-width="46"/>
+    <line x1="496" y1="632" x2="468" y2="712" stroke-width="50"/>
+    <line x1="528" y1="632" x2="556" y2="712" stroke-width="50"/>
+  </g>
+</svg>

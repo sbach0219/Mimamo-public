@@ -1,0 +1,214 @@
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RCTConvert+FIRLoggerLevel.h b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RCTConvert+FIRLoggerLevel.h
+index 7f5d782..33e5e43 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RCTConvert+FIRLoggerLevel.h
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RCTConvert+FIRLoggerLevel.h
+@@ -15,8 +15,8 @@
+  *
+  */
+ 
+-#import <Firebase/Firebase.h>
+ #import <React/RCTConvert.h>
++#import <Firebase/Firebase.h>
+ 
+ @interface RCTConvert (FIRLoggerLevel)
+ + (FIRLoggerLevel)convertStringLogLevel:(NSString *)rawString;
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RCTConvert+FIRLoggerLevel.m b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RCTConvert+FIRLoggerLevel.m
+index d5d7fbe..3f8f25d 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RCTConvert+FIRLoggerLevel.m
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RCTConvert+FIRLoggerLevel.m
+@@ -15,6 +15,7 @@
+  *
+  */
+ 
++#import <React/RCTConvert.h>
+ #import "RCTConvert+FIRLoggerLevel.h"
+ 
+ @implementation RCTConvert (FIRLoggerLevel)
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCollectionModule.h b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCollectionModule.h
+index c9db600..e65dbba 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCollectionModule.h
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCollectionModule.h
+@@ -15,11 +15,11 @@
+  *
+  */
+ 
++#import <React/RCTBridgeModule.h>
+ #import <Firebase/Firebase.h>
+ #import <Foundation/Foundation.h>
+ #import <RNFBApp/RNFBSharedUtils.h>
+ #import <RNFBFirestoreQuery.h>
+-#import <React/RCTBridgeModule.h>
+ #import "RNFBFirestoreCommon.h"
+ #import "RNFBFirestoreSerialize.h"
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCollectionModule.m b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCollectionModule.m
+index dd21cf1..1502e02 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCollectionModule.m
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCollectionModule.m
+@@ -15,6 +15,8 @@
+  *
+  */
+ 
++#import <React/RCTBridgeModule.h>
++#import <React/RCTUtils.h>
+ #import <RNFBApp/RNFBRCTEventEmitter.h>
+ #if __has_include(<RNFBFirestore/RNFBFirestore-Swift.h>)
+ // This import will work in situations where `use_frameworks!` is in use
+@@ -27,7 +29,6 @@
+ // directory. See firebase-ios-sdk#12611 for more context.
+ #import "RNFBFirestore-Swift.h"
+ #endif
+-#import <React/RCTUtils.h>
+ 
+ #import "RNFBFirestoreCollectionModule.h"
+ #import "RNFBFirestoreCommon.h"
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCommon.h b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCommon.h
+index 4845c68..7186d80 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCommon.h
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCommon.h
+@@ -16,8 +16,8 @@
+  *
+  */
+ 
+-#import <Firebase/Firebase.h>
+ #import <React/RCTBridgeModule.h>
++#import <Firebase/Firebase.h>
+ 
+ static NSString *const KEY_INCLUDE_METADATA_CHANGES = @"includeMetadataChanges";
+ static NSString *const KEY_SOURCE = @"source";
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCommon.m b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCommon.m
+index 2df70d1..4fda107 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCommon.m
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreCommon.m
+@@ -15,6 +15,7 @@
+  *
+  */
+ 
++#import <React/RCTBridgeModule.h>
+ #import "RNFBFirestoreCommon.h"
+ #import <RNFBApp/RNFBSharedUtils.h>
+ #import <RNFBApp/RNFBVersion.h>
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreDocumentModule.h b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreDocumentModule.h
+index 8a314bd..5eab672 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreDocumentModule.h
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreDocumentModule.h
+@@ -15,10 +15,10 @@
+  *
+  */
+ 
++#import <React/RCTBridgeModule.h>
+ #import <Firebase/Firebase.h>
+ #import <Foundation/Foundation.h>
+ #import <RNFBApp/RNFBSharedUtils.h>
+-#import <React/RCTBridgeModule.h>
+ #import "RNFBFirestoreCommon.h"
+ #import "RNFBFirestoreSerialize.h"
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreDocumentModule.m b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreDocumentModule.m
+index 6e51e42..7620781 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreDocumentModule.m
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreDocumentModule.m
+@@ -15,8 +15,9 @@
+  *
+  */
+ 
+-#import <RNFBApp/RNFBRCTEventEmitter.h>
++#import <React/RCTBridgeModule.h>
+ #import <React/RCTUtils.h>
++#import <RNFBApp/RNFBRCTEventEmitter.h>
+ 
+ #import "RNFBFirestoreDocumentModule.h"
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreModule.h b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreModule.h
+index a989534..f7d3a68 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreModule.h
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreModule.h
+@@ -15,10 +15,10 @@
+  *
+  */
+ 
++#import <React/RCTBridgeModule.h>
+ #import <Firebase/Firebase.h>
+ #import <Foundation/Foundation.h>
+ #import <RNFBApp/RNFBSharedUtils.h>
+-#import <React/RCTBridgeModule.h>
+ 
+ @interface RNFBFirestoreModule : NSObject <RCTBridgeModule>
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreModule.m b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreModule.m
+index 5b9c7a6..449ffd6 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreModule.m
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreModule.m
+@@ -15,9 +15,10 @@
+  *
+  */
+ 
++#import <React/RCTBridgeModule.h>
++#import <React/RCTUtils.h>
+ #import "RNFBFirestoreModule.h"
+ #import <RNFBApp/RNFBRCTEventEmitter.h>
+-#import <React/RCTUtils.h>
+ #import "FirebaseFirestoreInternal/FIRPersistentCacheIndexManager.h"
+ #import "RNFBFirestoreCommon.h"
+ #import "RNFBPreferences.h"
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreQuery.h b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreQuery.h
+index 9521900..227f6b6 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreQuery.h
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreQuery.h
+@@ -16,9 +16,9 @@
+  *
+  */
+ 
++#import <React/RCTBridgeModule.h>
+ #import <Firebase/Firebase.h>
+ #import <RNFBFirestoreSerialize.h>
+-#import <React/RCTBridgeModule.h>
+ 
+ @interface RNFBFirestoreQuery : NSObject
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreSerialize.h b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreSerialize.h
+index 6c601af..268c5d5 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreSerialize.h
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreSerialize.h
+@@ -16,8 +16,8 @@
+  *
+  */
+ 
+-#import <Firebase/Firebase.h>
+ #import <React/RCTBridgeModule.h>
++#import <Firebase/Firebase.h>
+ 
+ @interface RNFBFirestoreSerialize : NSObject
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreTransactionModule.h b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreTransactionModule.h
+index 7fb14bb..9ffb2e7 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreTransactionModule.h
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreTransactionModule.h
+@@ -15,11 +15,11 @@
+  *
+  */
+ 
++#import <React/RCTBridgeModule.h>
+ #import <Firebase/Firebase.h>
+ #import <Foundation/Foundation.h>
+ #import <RNFBApp/RNFBSharedUtils.h>
+ #import <RNFBFirestoreQuery.h>
+-#import <React/RCTBridgeModule.h>
+ #import "RNFBFirestoreCommon.h"
+ #import "RNFBFirestoreSerialize.h"
+ 
+diff --git a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreTransactionModule.m b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreTransactionModule.m
+index bf3dad6..be0ab40 100644
+--- a/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreTransactionModule.m
++++ b/node_modules/@react-native-firebase/firestore/ios/RNFBFirestore/RNFBFirestoreTransactionModule.m
+@@ -15,8 +15,9 @@
+  *
+  */
+ 
+-#import <RNFBApp/RNFBRCTEventEmitter.h>
++#import <React/RCTBridgeModule.h>
+ #import <React/RCTUtils.h>
++#import <RNFBApp/RNFBRCTEventEmitter.h>
+ 
+ #import "RNFBFirestoreTransactionModule.h"
+ 

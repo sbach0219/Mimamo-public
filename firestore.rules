@@ -1,0 +1,565 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 参加者（見守る人 or 歩く人）かどうか。
+    // 存在しないフィールドでもエラーにならないよう get(key, default) で安全に参照する。
+    function isParticipant(data) {
+      return request.auth != null && (
+        data.get('watcherUid', '') == request.auth.uid ||
+        data.get('walkerUid', '') == request.auth.uid
+      );
+    }
+
+    // まだ歩く人が決まっていない（待機中の）セッションか
+    function isJoinable(data) {
+      return data.get('walkerUid', '') == ''
+        && data.get('status', '') == 'waiting'
+        && data.get('expiresAt', request.time) > request.time;
+    }
+
+    function changedOnly(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    function isLiveSession(data) {
+      return data.get('status', '') in ['active', 'alert', 'sos', 'anomaly'];
+    }
+
+    // 相手の呼び名（v3 Phase 1 §2.3）。見守る人が入力する任意の1語で、
+    // 「はるちゃん」のような呼びかけだけを想定する。walkerPhone と同じく
+    // 型と長さを固定して、このフィールドを別の情報の置き場にさせない。
+    // 空文字は「呼び名なし」として許す。
+    function isValidWalkerName(data) {
+      return data.get('walkerName', '') is string
+        && data.get('walkerName', '').size() <= 30;
+    }
+
+    // 地名ラベル（D-14）。歩く人の端末が自分の位置を地名に直して置いていく1語で、
+    // 終端時に Functions がペアの「最終確認」へ転記する。座標をこのフィールドに
+    // 持ち込ませないため、型と長さを固定する（座標そのものを弾く判定は
+    // クライアント側の normalizePlaceLabel が担う。rules は器の形だけを守る）。
+    function isValidPlaceLabel(data) {
+      return data.get('placeLabel', '') is string
+        && data.get('placeLabel', '').size() <= 60;
+    }
+
+    // 位置共有の強さ（H-2）。歩く人の端末が startBackgroundWalk の結果を1語で置く。
+    // 値の定義は src/lib/locationMode.ts に一本化してあるので、片方だけ直さないこと。
+    // 未設定（まだ報告が届いていない）は許す＝見守り側は「判定不能」として扱う。
+    function isValidLocationMode(data) {
+      return data.get('locationMode', 'none') in ['background', 'foreground', 'none'];
+    }
+
+    // 歩く人が書いてよい status の値（architecture-review B-2）。
+    // これまで status は自由文字列で、歩く人は 'waiting' にも未知の値にも戻せた。
+    // 正当な集合の定義は src/lib/sessionStatus.ts に一本化してある。片方だけ直すと
+    // 「アプリは書くのに rules が拒む（またはその逆）」になるので、必ず両方直すこと。
+    function isWalkerWritableStatus(status) {
+      return status in ['active', 'alert', 'anomaly', 'sos', 'arrived', 'ended', 'cancelled'];
+    }
+
+    // ---- 恒久ペア（ADR P3 決定2・決定4）----------------------------------
+    // ペアは「方向つき（walker → watcher）の2者関係」。役割はペア内で固定する。
+    function isPairMember(data) {
+      return request.auth != null && (
+        data.get('walkerUid', '') == request.auth.uid ||
+        data.get('watcherUid', '') == request.auth.uid
+      );
+    }
+
+    // まだ受諾できる招待か。pairId 自体が推測不可能な招待トークンなので、
+    // 「リンクを知っている人だけが読める」を sessions の isJoinable と同型で表現する。
+    function isOpenInvite(data) {
+      return data.get('status', '') == 'invited'
+        && data.get('inviteExpiresAt', request.time) > request.time
+        && (data.get('walkerUid', '') == '' || data.get('watcherUid', '') == '');
+    }
+
+    // アバターはプリセットIDのみ（写真は Stage 4 予約）。
+    // 値は src/lib/avatars.ts の AVATAR_PRESETS と一致させること。
+    function isPresetAvatar(value) {
+      return value in ['grandpa', 'grandma', 'boy', 'girl', 'man', 'woman', 'cat', 'dog', 'star', 'moon'];
+    }
+
+    // ペア文書に複製された表示名・アバターの検証。
+    // 表示名は任意入力のニックネームで、相手ペアにのみ見える（ポリシー §2）。
+    function pairProfileValid() {
+      return request.resource.data.get('watcherDisplayName', '') is string
+        && request.resource.data.get('watcherDisplayName', '').size() <= 30
+        && request.resource.data.get('walkerDisplayName', '') is string
+        && request.resource.data.get('walkerDisplayName', '').size() <= 30
+        && isPresetAvatar(request.resource.data.get('watcherAvatar', 'star'))
+        && isPresetAvatar(request.resource.data.get('walkerAvatar', 'star'));
+    }
+
+    // クライアントが書いてよいペアのフィールド。
+    // lastSessionSummary / staleSince は Cloud Functions（Admin SDK）専用で、
+    // ここに含めない＝クライアントからは書けない。
+    // 「ペアの最新状態はサーバーだけが書く」は v3移行設計書 §2.3 の確定事項でもある
+    // （walker クライアントに pairs への直接書き込みを許すと rules の攻撃面が倍増する）。
+    // 同様に entitlements（課金資格）も users 側の許可リストに入れていない。
+    function pairClientFields() {
+      return [
+        'status', 'createdByUid', 'watcherUid', 'walkerUid',
+        'watcherDisplayName', 'watcherAvatar', 'walkerDisplayName', 'walkerAvatar',
+        'createdAt', 'acceptedAt', 'revokedAt', 'revokedByUid', 'inviteExpiresAt'
+      ];
+    }
+
+    // 見守る人が預かる「相手の呼び名と年齢」（D-8 / v3移行設計書 §9）。
+    // walkerDisplayName（歩く人が自分でつける名前）とは別物で、こちらは
+    // **他人に関する情報を、見守る人が、7日 purge の外に恒久保存する**という新カテゴリ。
+    // 用途は 110 番通報のときに見守り手が口頭で伝えること、その1つだけ。
+    // だから年齢は数値ひとつ（誕生日・生年は取らない。目的に対して過剰）。
+    // 器を厳しく固定して、このフィールドを別の情報の置き場にさせない。
+    function walkerLabelValid(data) {
+      return !('walkerLabel' in data.keys())
+        || data.walkerLabel == null
+        || (
+          data.walkerLabel.keys().hasOnly(['name', 'age'])
+          && data.walkerLabel.get('name', '') is string
+          && data.walkerLabel.get('name', '').size() <= 30
+          && (
+            data.walkerLabel.get('age', null) == null
+            || (
+              data.walkerLabel.age is int
+              && data.walkerLabel.age >= 0
+              && data.walkerLabel.age <= 120
+            )
+          )
+        );
+    }
+
+    // 恒久ペアを根拠にした歩行セッションの作成を許すか（E-4）。
+    // active なペアの「歩く人」だけが、そのペアの見守り手に向けて作れる。
+    // 見守り手が walker 席に自分以外を書いて始めることは構造的にできない（I-2）。
+    // 同じ文書を4回引かない（L-1）。rules_version 2 の let で get() を1回にまとめる。
+    // 単一オペレーションのアクセス呼び出し上限（10）は messages の get() と
+    // 組み合わさると近づくし、課金も4倍になる。
+    function pairAllowsWalkerSession(pairId, watcherUid) {
+      let pair = get(/databases/$(database)/documents/pairs/$(pairId));
+      return exists(/databases/$(database)/documents/pairs/$(pairId))
+        && pair.data.status == 'active'
+        && pair.data.walkerUid == request.auth.uid
+        && pair.data.watcherUid == watcherUid;
+    }
+
+    // ペア起点の「見守り依頼」を作れるか（v3移行設計書 §6.1 / 2026-08-26 決定①）。
+    // 依頼を作れるのはそのペアの見守り手だけ。ペアが active でなければ作れない。
+    function pairAllowsWatcherRequest(pairId) {
+      let pair = get(/databases/$(database)/documents/pairs/$(pairId));
+      return exists(/databases/$(database)/documents/pairs/$(pairId))
+        && pair.data.status == 'active'
+        && pair.data.watcherUid == request.auth.uid;
+    }
+
+    // ペア起点の依頼を承諾できるか。承諾できるのはそのペアの歩く人だけで、
+    // 依頼の見守り手もペア文書と一致していなければならない。pairId 付きセッションは
+    // 招待リンクを配らないため、「リンクを知っている人なら誰でも参加」を閉じる。
+    function pairAllowsWalkerAccept(pairId, watcherUid) {
+      let pair = get(/databases/$(database)/documents/pairs/$(pairId));
+      return exists(/databases/$(database)/documents/pairs/$(pairId))
+        && pair.data.status == 'active'
+        && pair.data.walkerUid == request.auth.uid
+        && pair.data.watcherUid == watcherUid;
+    }
+
+    // 課金資格（v3移行設計書 §2.5.3 / D-11 月額サブスク）。
+    // users/{uid}.entitlements.group.active を Cloud Functions（RevenueCat webhook）
+    // だけが書き、rules はそれを読むだけ。users のフィールド許可リストに entitlements を
+    // 入れていないので、クライアントは自分の分でも書けない。
+    // expiresAt も見る。active だけを見ると、失効の唯一の経路が「RevenueCat が
+    // EXPIRATION を送ってきて、それが Firestore に書けた」1本になり、webhook が
+    // 落ちていた間の1通を取りこぼしただけで資格が無期限に残る。期限そのものを
+    // 突き合わせれば、取りこぼしても翌日以降は自然に閉じる（同じ get() の中の
+    // フィールドを1つ増やすだけなので read は増えない）。
+    function hasGroupEntitlement() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+        && groupEntitlementValid(
+             get(/databases/$(database)/documents/users/$(request.auth.uid))
+               .data.get('entitlements', {}).get('group', {})
+           );
+    }
+
+    function groupEntitlementValid(group) {
+      return group.get('active', false) == true
+        && (group.get('expiresAt', null) == null || group.get('expiresAt', null) > request.time);
+    }
+
+    // users/{uid}（ADR P3 決定1）。
+    // read は本人のみ。相手に見せる表示名・アバターはペア文書へ複製する方式をとる。
+    // 理由: (1) fcmToken は他人の端末へ通知を送れる資格情報であり、誰にも読ませない
+    //       （現行の「セッション参加者はお互いのトークンを read できる」より安全側に改善）
+    //       (2) uid からペアを逆引きする rules の get() が不要になり、read 課金も減る
+    match /users/{uid} {
+      function userDataValid() {
+        return request.resource.data.get('displayName', '') is string
+          && request.resource.data.get('displayName', '').size() <= 30
+          && isPresetAvatar(request.resource.data.get('avatar', 'star'))
+          && request.resource.data.get('fcmToken', '') is string
+          && request.resource.data.get('fcmToken', '').size() <= 4096;
+      }
+
+      allow get: if request.auth != null && request.auth.uid == uid;
+      // list を開けると uid の総当たりで文書の存在が引けるため閉じる。
+      allow list: if false;
+
+      allow create: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['displayName', 'avatar', 'fcmToken', 'lastSeenAt'])
+        && userDataValid()
+        // lastSeenAt は死活可視化（I-5）の根拠なので、クライアント時計で未来を
+        // 書けてはいけない。サーバー時刻そのものだけを許す。
+        && request.resource.data.get('lastSeenAt', request.time) == request.time;
+
+      allow update: if request.auth != null
+        && request.auth.uid == uid
+        && changedOnly(['displayName', 'avatar', 'fcmToken', 'lastSeenAt'])
+        && userDataValid()
+        && (
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastSeenAt'])
+          || request.resource.data.lastSeenAt == request.time
+        );
+
+      // 設定からの「このアプリのデータを消す」（ポリシー §6 の保持期限と対）。
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // pairs/{pairId}（ADR P3 決定2・決定4）。
+    // pairId は推測不可能なドキュメントIDで、そのまま招待トークンを兼ねる。
+    match /pairs/{pairId} {
+      // 単体取得: 当事者、または期限内の招待（＝トークンを知っている人）。
+      allow get: if request.auth != null
+        && (isPairMember(resource.data) || isOpenInvite(resource.data));
+
+      // クエリ: 当事者のみ。sessions の get/list 分離と同じ理由で、
+      // 招待の列挙による見守り手の情報漏洩を防ぐ。
+      allow list: if request.auth != null && isPairMember(resource.data);
+
+      // 招待の作成。Stage 1 は現行方向のみ（見守り手が作り、歩く人の席が空く）。
+      // 逆方向（D-6 遠隔招待）は安全装置3点セットと一緒に Stage 3 で解禁する。
+      //
+      // entitlement ゲート（v3移行設計書 §2.5.3 / D-11: 月額サブスク）。
+      // 恒久ペアは有料機能なので、作成には課金資格を要求する。ペア作成は低頻度なので
+      // この1 read の増加は許容範囲。既存ペアの受諾・解除・表示名更新にはゲートを
+      // 掛けない——資格が切れたときにペアを人質に取らない（§2.5.3 の休眠挙動）。
+      // 同時見守り人数の上限は rules では強制できない（§2.5.3）ため、ここには書かない。
+      allow create: if request.auth != null
+        && hasGroupEntitlement()
+        && request.resource.data.keys().hasOnly(pairClientFields())
+        && request.resource.data.status == 'invited'
+        && request.resource.data.createdByUid == request.auth.uid
+        && request.resource.data.watcherUid == request.auth.uid
+        && request.resource.data.walkerUid == ''
+        && request.resource.data.inviteExpiresAt > request.time
+        // 24時間 + 端末時計のずれの余裕。長すぎる招待は作らせない
+        && request.resource.data.inviteExpiresAt < request.time + duration.value(1445, 'm')
+        && pairProfileValid();
+
+      allow update: if (
+          // ① 空席への自己登録（invited → active）。作成者自身は受諾できない
+          //    （1人2役のペアは見守りの実体がない。sessions の A-5 と同型）。
+          request.auth != null
+          && isOpenInvite(resource.data)
+          && resource.data.get('walkerUid', '') == ''
+          && resource.data.get('createdByUid', '') != request.auth.uid
+          && request.resource.data.walkerUid == request.auth.uid
+          && request.resource.data.walkerUid != resource.data.get('watcherUid', '')
+          && request.resource.data.watcherUid == resource.data.get('watcherUid', '')
+          && request.resource.data.status == 'active'
+          && changedOnly(['walkerUid', 'status', 'acceptedAt', 'walkerDisplayName', 'walkerAvatar'])
+          // get(key, default) だと「書かなければ既定値が返って常に真」になる。
+          // 存在そのものを必須にする（M-1）。
+          && 'acceptedAt' in request.resource.data.keys()
+          && request.resource.data.acceptedAt == request.time
+          && pairProfileValid()
+        )
+        || (
+          // ② 解除（I-3）。成立後はどちらの当事者からでも一方的にできる。
+          //    招待中のものは、作った本人が取り消せる。
+          request.auth != null
+          && (
+            (resource.data.get('status', '') == 'active' && isPairMember(resource.data))
+            || (resource.data.get('status', '') == 'invited' && resource.data.get('createdByUid', '') == request.auth.uid)
+          )
+          && request.resource.data.status == 'revoked'
+          && request.resource.data.revokedByUid == request.auth.uid
+          && changedOnly(['status', 'revokedAt', 'revokedByUid'])
+          // revokedAt を省略できると、解除済みペアが purge のクエリ
+          // （where('revokedAt','<=',...)）に載らず永久に消えない。「解除から7日で
+          // 完全削除」という約束が、フィールド1つを書かないだけで破れる（M-1）。
+          && 'revokedAt' in request.resource.data.keys()
+          && request.resource.data.revokedAt == request.time
+        )
+        || (
+          // ③ 自分の表示名・アバターの複製の更新。相手の分は動かせない。
+          request.auth != null
+          && isPairMember(resource.data)
+          && resource.data.get('status', '') in ['invited', 'active']
+          && request.resource.data.status == resource.data.status
+          && (
+            (resource.data.get('watcherUid', '') == request.auth.uid
+              && changedOnly(['watcherDisplayName', 'watcherAvatar']))
+            || (resource.data.get('walkerUid', '') == request.auth.uid
+              && changedOnly(['walkerDisplayName', 'walkerAvatar']))
+          )
+          && pairProfileValid()
+        )
+        || (
+          // ④ 見守る人が預かる「相手の呼び名と年齢」の編集（D-8）。
+          //    書けるのは見守る人だけ。歩く人が自分の年齢を書く経路は作らない
+          //    ——入力者と用途（110番通報で伝える人）を一致させる、という §9 の判断。
+          //    解除の即時削除は Cloud Functions が行う（クライアントに消し忘れを
+          //    委ねない。onPairChange）。
+          request.auth != null
+          && resource.data.get('status', '') == 'active'
+          && resource.data.get('watcherUid', '') == request.auth.uid
+          && request.resource.data.status == resource.data.status
+          && changedOnly(['walkerLabel'])
+          && walkerLabelValid(request.resource.data)
+        );
+
+      // 削除は Cloud Functions のみ（revoked から7日で消す）。
+      allow delete: if false;
+    }
+
+    match /sessions/{sessionId} {
+      // 単体取得（get）：参加者は読める。加えて、未参加の待機セッションは
+      // リンク（推測不可能なドキュメントID）を知っていれば参加のために読める。
+      allow get: if request.auth != null
+        && (isParticipant(resource.data) || isJoinable(resource.data));
+
+      // クエリ（list）：自分が当事者のセッションのみ。
+      // rules_version='2' では read = get + list なので、read で isJoinable を許すと
+      // 認証済みの誰でも where('status','==','waiting') 等で全世界の待機セッションを
+      // 列挙でき、sessionId / watcherUid / watcherFcmToken / 自宅座標が漏洩する。
+      // そこから招待外セッションへの参加（乗っ取り）と偽SOSに繋がるため、
+      // 「推測不可能なIDを知っている人だけ」という前提は get だけに限定する。
+      // （2026-07-31 の自己診断で検出。firestore-tests/ が再発を防ぐ）
+      allow list: if request.auth != null && isParticipant(resource.data);
+
+      // 見守る人が自分のUIDで作成（都度セッション。恒久ペア導入後も不変・並存する）
+      // pairId 付きで作られたものが「ペアへの見守り依頼」。依頼を作った時点では
+      // walkerUid は空のままで、位置は1点も流れない。歩く人が端末で承諾（join）して
+      // 初めてセッションが動き出す（ADR §7 I-2）。
+      allow create: if (
+          request.auth != null
+          // 許可リスト（M-3）。ここが開いていると、見守り手が巨大な destinationLabel や
+          // 任意の placeLabel を添えた依頼を作り、自分で cancelled に落とすだけで
+          // 「終端遷移」として pairs へ転記させられた。歩く人の承諾すら要らないまま、
+          // 相手の画面に任意のテキストを出せてしまう（＝同意していない相手への一方的な
+          // メッセージ送出）。ペア文書はセッションの7日 purge の外にあるので、
+          // ここは分岐②と同じ厳しさで閉じる。
+          && request.resource.data.keys().hasOnly([
+            'status', 'estimatedMinutes', 'mode', 'watcherUid', 'createdAt', 'expiresAt',
+            'sentinelSensitivity', 'transport', 'pairId', 'walkerName', 'watcherFcmToken',
+            'homeLatitude', 'homeLongitude'
+          ])
+          && request.resource.data.watcherUid == request.auth.uid
+          && request.resource.data.get('walkerUid', '') == ''
+          && request.resource.data.status == 'waiting'
+          && request.resource.data.estimatedMinutes is number
+          && request.resource.data.estimatedMinutes > 0
+          && request.resource.data.expiresAt > request.time
+          && isValidWalkerName(request.resource.data)
+          && (
+            request.resource.data.get('pairId', '') == ''
+            || pairAllowsWatcherRequest(request.resource.data.get('pairId', ''))
+          )
+        )
+        || (
+          // 恒久ペア起点（E-4）。歩く人が自分でセッションを作って歩き始める。
+          // waiting を経ないので status は最初から 'active'（歩き始め＝作成）。
+          // pairId が空の従来経路はこの分岐に入らないため、上の分岐は無変更のまま
+          // 共存できる（旧バージョンのアプリは無修正で動き続ける）。
+          // ここで get() するのは pairId が非空のときだけ。|| は短絡評価される。
+          request.auth != null
+          && request.resource.data.get('pairId', '') is string
+          && request.resource.data.get('pairId', '') != ''
+          && request.resource.data.keys().hasOnly([
+            'status', 'pairId', 'watcherUid', 'walkerUid', 'estimatedMinutes', 'mode',
+            'sentinelSensitivity', 'transport', 'createdAt', 'startedAt', 'expiresAt',
+            'walkerFcmToken', 'homeLatitude', 'homeLongitude', 'destinationLabel'
+          ])
+          && request.resource.data.walkerUid == request.auth.uid
+          && request.resource.data.status == 'active'
+          && request.resource.data.estimatedMinutes is number
+          && request.resource.data.estimatedMinutes > 0
+          && request.resource.data.expiresAt > request.time
+          // 目的地は「ユーザーが入力したラベル」だけ。座標・住所文字列は残さない（E-5）
+          && request.resource.data.get('destinationLabel', '') is string
+          && request.resource.data.get('destinationLabel', '').size() <= 30
+          && isValidPlaceLabel(request.resource.data)
+          && pairAllowsWalkerSession(request.resource.data.pairId, request.resource.data.watcherUid)
+        );
+
+      // 参加者による更新（当事者のUIDはすり替え不可）、
+      // または「未参加の待機セッションに歩く人が自分を登録」（見守り側UIDは維持）
+      allow update: if (
+          // 歩く人は、生きているセッションに対してのみ、自分の現在地・状態・
+          // 端末トークンを更新できる。
+          // isLiveSession を課すのは、終了・到着・キャンセル済みのセッションへ
+          // 位置を書き続けられると、見守りを終えたはずの相手に現在地が届き続ける
+          // ため（purge まで最長7日）。バックグラウンドの位置タスクは status を
+          // 見ずに書くので、ここが最後の防波堤になる。
+          // 終端へ遷移させる書き込み（arrived/ended）自体は live からの1回なので通る。
+          isParticipant(resource.data)
+          && isLiveSession(resource.data)
+          && isWalkerWritableStatus(request.resource.data.status)
+          && resource.data.get('walkerUid', '') == request.auth.uid
+          && request.resource.data.get('watcherUid', '') == resource.data.get('watcherUid', '')
+          && request.resource.data.get('walkerUid', '') == resource.data.get('walkerUid', '')
+          && changedOnly([
+            'status', 'sosAt', 'sosSilent', 'sosAcknowledgedAt', 'sosCancelledAt', 'anomaly', 'anomalyResolvedAt',
+            'safetyCheck', 'latitude', 'longitude', 'locationUpdatedAt', 'lastHeartbeat',
+            'batteryLevel', 'batteryState', 'walkerFcmToken', 'estimatedMinutes', 'expiresAt',
+            'timeExtendedAt', 'endedAt', 'placeLabel', 'locationMode'
+          ])
+          && isValidPlaceLabel(request.resource.data)
+          && isValidLocationMode(request.resource.data)
+          && (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['sosAcknowledgedAt'])
+            || (
+              request.resource.data.status == 'sos'
+              && request.resource.data.sosAcknowledgedAt == null
+            )
+          )
+        )
+        || (
+          // 安全弁: セッションが終端した後でも、期限内であれば「SOS の発信」だけは通す。
+          // 到着を押した直後・自動終了の直後に何かあったとき、助けを呼ぶ手段まで
+          // 閉じてしまうのが最悪の失敗であるため、位置と SOS 関連フィールドに限って開ける。
+          // 期限（expiresAt）を過ぎたセッションは対象外。
+          isParticipant(resource.data)
+          && resource.data.get('walkerUid', '') == request.auth.uid
+          && request.resource.data.get('watcherUid', '') == resource.data.get('watcherUid', '')
+          && request.resource.data.get('walkerUid', '') == resource.data.get('walkerUid', '')
+          && resource.data.get('expiresAt', request.time) > request.time
+          && request.resource.data.status == 'sos'
+          && changedOnly(['status', 'sosAt', 'sosSilent', 'sosAcknowledgedAt', 'latitude', 'longitude', 'locationUpdatedAt', 'lastHeartbeat'])
+          && request.resource.data.get('sosAcknowledgedAt', null) == null
+        )
+        || (
+          // 見守る人は、安否確認・自分の通知トークン・参加待ちの取消だけを更新できる。
+          isParticipant(resource.data)
+          && resource.data.get('watcherUid', '') == request.auth.uid
+          && request.resource.data.get('watcherUid', '') == resource.data.get('watcherUid', '')
+          && request.resource.data.get('walkerUid', '') == resource.data.get('walkerUid', '')
+          && changedOnly(['watcherFcmToken', 'safetyCheck', 'status', 'endedAt', 'endedBy', 'walkerPhone', 'walkerName', 'sosAcknowledgedAt'])
+          && isValidWalkerName(request.resource.data)
+          // 緊急連絡先（任意）。見守る人が入力し、SOS 時の「本人に電話する」に使う。
+          // 文字列・20文字以内・数字と + - のみに限る（電話番号以外の情報を
+          // このフィールドに持ち込ませない。空文字は「登録なし」として許す）。
+          && request.resource.data.get('walkerPhone', '') is string
+          && request.resource.data.get('walkerPhone', '').size() <= 20
+          && request.resource.data.get('walkerPhone', '').matches('^[0-9+-]*$')
+          && (
+            request.resource.data.status == resource.data.status
+            || (resource.data.status == 'waiting' && request.resource.data.status == 'cancelled')
+            // 見守る人からのセッション終了（F-10 / watcher-exit ADR E3）。
+            // 進行中（active/alert/anomaly/sos）からの 'ended' だけを許し、
+            // endedAt はサーバー時刻を同時に必須にする。参加待ち（waiting）は
+            // E2 の cancelled 側で扱うのでここには入れない。終端済みからの
+            // 再終了も isLiveSession が弾く。
+            // endedBy は必須。無いと Functions の watch_ended 通知が飛ばず、
+            // 歩く人の画面は「時間切れで おわったよ」と嘘の理由を出す。
+            || (
+              isLiveSession(resource.data)
+              && request.resource.data.status == 'ended'
+              && request.resource.data.endedAt == request.time
+              && request.resource.data.get('endedBy', '') == 'watcher'
+            )
+          )
+          // endedBy は「誰が終わらせたか」だけを表す付随情報（決定D）。
+          // status を動かさずに endedBy だけ書けると、Functions の通知文言の分岐を
+          // 騙せてしまう（歩く人の終了を「見守る人が終えた」と偽れる）ため、
+          // 終了遷移とセットのときにしか書けないことを構造で強制する。
+          && (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['endedBy'])
+            || (
+              request.resource.data.endedBy == 'watcher'
+              && request.resource.data.status == 'ended'
+              && resource.data.status != 'ended'
+            )
+          )
+          && (
+            !request.resource.data.diff(resource.data).affectedKeys().hasAny(['sosAcknowledgedAt'])
+            || (
+              resource.data.status == 'sos'
+              && request.resource.data.status == 'sos'
+              && request.resource.data.sosAcknowledgedAt == request.time
+            )
+          )
+        )
+        || (
+          // 参加リンクを知る人は、待機中かつ期限内のセッションに一度だけ参加できる。
+          // ただし見守る人自身は歩く人になれない（1人2役のセッションは見守りの
+          // 実体がなく、役割の永続化と復帰がねじれる）。
+          request.auth != null
+          && isJoinable(resource.data)
+          && request.resource.data.get('watcherUid', '') == resource.data.get('watcherUid', '')
+          && request.resource.data.walkerUid == request.auth.uid
+          && request.resource.data.walkerUid != resource.data.get('watcherUid', '')
+          && request.resource.data.status == 'active'
+          && changedOnly(['walkerUid', 'walkerFcmToken', 'status', 'startedAt'])
+          // ペア起点の依頼（pairId 付き）は招待リンクを配らないので、
+          // 承諾できるのはそのペアの歩く人だけに閉じる。
+          && (
+            resource.data.get('pairId', '') == ''
+            || pairAllowsWalkerAccept(resource.data.get('pairId', ''), resource.data.get('watcherUid', ''))
+          )
+        );
+
+      allow delete: if false;
+
+      // メッセージ・経路は親セッションの参加者のみ
+      match /messages/{messageId} {
+        allow read: if request.auth != null &&
+          isParticipant(get(/databases/$(database)/documents/sessions/$(sessionId)).data);
+
+        allow create: if request.auth != null
+          && isParticipant(get(/databases/$(database)/documents/sessions/$(sessionId)).data)
+          && request.resource.data.keys().hasOnly(['text', 'timestamp', 'sender'])
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 300
+          && request.resource.data.timestamp == request.time
+          && (
+            (get(/databases/$(database)/documents/sessions/$(sessionId)).data.get('walkerUid', '') == request.auth.uid
+              && request.resource.data.sender == 'walker')
+            ||
+            (get(/databases/$(database)/documents/sessions/$(sessionId)).data.get('watcherUid', '') == request.auth.uid
+              && request.resource.data.sender == 'watcher')
+          );
+
+        // リアクションは受信者だけが追加でき、本文・送信者は不変。
+        allow update: if request.auth != null
+          && isParticipant(get(/databases/$(database)/documents/sessions/$(sessionId)).data)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acknowledged'])
+          && request.resource.data.acknowledged == true
+          && (
+            (resource.data.sender == 'walker'
+              && get(/databases/$(database)/documents/sessions/$(sessionId)).data.get('watcherUid', '') == request.auth.uid)
+            ||
+            (resource.data.sender == 'watcher'
+              && get(/databases/$(database)/documents/sessions/$(sessionId)).data.get('walkerUid', '') == request.auth.uid)
+          );
+      }
+      match /route/{routeId} {
+        allow read: if request.auth != null &&
+          isParticipant(get(/databases/$(database)/documents/sessions/$(sessionId)).data);
+        allow create: if request.auth != null
+          && get(/databases/$(database)/documents/sessions/$(sessionId)).data.get('walkerUid', '') == request.auth.uid
+          && isLiveSession(get(/databases/$(database)/documents/sessions/$(sessionId)).data)
+          && request.resource.data.keys().hasOnly(['lat', 'lng', 'timestamp'])
+          && request.resource.data.lat is number
+          && request.resource.data.lng is number
+          && request.resource.data.lat >= -90 && request.resource.data.lat <= 90
+          && request.resource.data.lng >= -180 && request.resource.data.lng <= 180
+          && request.resource.data.timestamp == request.time;
+      }
+    }
+  }
+}

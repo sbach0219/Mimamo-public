@@ -1,0 +1,96 @@
+{
+  "expo": {
+    "name": "ThousandSKY",
+    "//": "name はネイティブプロジェクト名（ThousandSKY.xcworkspace / scheme）の元になるため ASCII のまま。表示名「みまも」は ios.infoPlist.CFBundleDisplayName と plugins/withXcode26Fixes.js の Android strings 上書きで設定",
+    "slug": "thousand-sky-app",
+    "scheme": "thousandsky",
+    "version": "1.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "deploymentTarget": "16.4",
+      "bundleIdentifier": "com.thousandsky.app",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "//": "time-sensitive entitlement は ad-hoc プロファイル未対応のため一時撤去。復活手順: 対話モードで eas build を実行し capability sync に Yes → このコメントを entitlements 設定に戻す",
+      "infoPlist": {
+        "CFBundleDisplayName": "みまも",
+        "UIBackgroundModes": [
+          "location",
+          "remote-notification",
+          "fetch"
+        ],
+        "NSLocationWhenInUseUsageDescription": "あなたの安全を見守る人に、現在地を共有するために使います。",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "アプリを閉じている間も、見守る人に現在地を届け続けるために使います。",
+        "NSLocationAlwaysUsageDescription": "アプリを閉じている間も、見守る人に現在地を届け続けるために使います。",
+        "ITSAppUsesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.thousandsky.app",
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFF3F7",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION",
+        "POST_NOTIFICATIONS",
+        "VIBRATE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      "@react-native-firebase/messaging",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static",
+            "usePrecompiledModules": false
+          }
+        }
+      ],
+      "./plugins/withXcode26Fixes",
+      [
+        "expo-location",
+        {
+          "isAndroidBackgroundLocationEnabled": true,
+          "locationAlwaysAndWhenInUsePermission": "アプリを閉じている間も、見守る人に現在地を届け続けるために使います。",
+          "locationWhenInUsePermission": "あなたの安全を見守る人に、現在地を共有するために使います。"
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "転倒などの異常を検知して見守る人にお知らせするため、端末のモーション（加速度）センサーを使います。データは端末内で処理され、外部に送信されません。"
+        }
+      ],
+      "expo-notifications",
+      [
+        "expo-audio",
+        {
+          "//": "SOSサイレンを鳴らすだけで録音は一切しないため、マイク権限は無効化する（審査・プライバシー対策）。背景再生は既定の有効のまま＝画面ロック後もサイレンが鳴り続ける",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ]
+    ],
+    "//runtimeVersion": "policy=appVersion のため runtimeVersion は version と同値。1.0.0→1.1.0 の引き上げは expo-clipboard（ネイティブモジュール）追加に伴う OTA 境界の切り直し。旧ビルド（runtime 1.0.0）にこの JS を配信するとモジュール不在でクラッシュするため、必ず新ビルドを配布すること",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
+  }
+}

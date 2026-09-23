@@ -1,0 +1,13 @@
+{
+  "//": "jest(ts-jest)専用。expo/tsconfig.base は module:preserve 等で ts-jest と相性が悪いため継承しない",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "target": "ES2020",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "types": ["jest", "node"]
+  },
+  "include": ["src/**/*.ts"]
+}

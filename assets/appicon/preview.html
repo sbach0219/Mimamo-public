@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>みまも アプリアイコン 3案プレビュー</title>
+<style>
+  body {
+    margin: 0;
+    padding: 48px 32px;
+    background: #16181f;
+    color: #e8eaf2;
+    font-family: -apple-system, "Hiragino Sans", sans-serif;
+  }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 8px; }
+  p.note { color: #9aa0b4; font-size: 13px; margin: 0 0 40px; }
+  .grid { display: flex; gap: 48px; flex-wrap: wrap; }
+  .card { width: 420px; }
+  .card h2 { font-size: 15px; font-weight: 600; margin: 0 0 4px; }
+  .card p { font-size: 12px; color: #9aa0b4; margin: 0 0 16px; line-height: 1.6; }
+  /* 1024相当（400px表示）: OS の角丸マスクを模擬（iOS 実効比率 約22.4%） */
+  .large img {
+    width: 400px; height: 400px;
+    border-radius: 22.4%;
+    display: block;
+  }
+  /* ホーム画面模擬（60px） */
+  .homescreen {
+    margin-top: 20px;
+    padding: 28px 24px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #2a2f45 0%, #101322 100%);
+    display: flex; gap: 26px; align-items: flex-start;
+  }
+  .app { text-align: center; width: 68px; }
+  .app img { width: 60px; height: 60px; border-radius: 22.4%; display: block; margin: 0 auto; }
+  .app span {
+    display: block; margin-top: 6px;
+    font-size: 10px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.5);
+  }
+  .dummy {
+    width: 60px; height: 60px; border-radius: 22.4%;
+    background: rgba(255,255,255,0.14); margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+  <h1>みまも アプリアイコン 3案</h1>
+  <p class="note">上: 1024書き出しの角丸マスク表示 / 下: ホーム画面模擬（60px相当・隣接アプリはダミー）。角丸はOSが付けるため、SVG/PNG自体は正方形・透過なし。</p>
+
+  <div class="grid">
+    <div class="card">
+      <h2>A案 — コンセプト忠実案</h2>
+      <p>濃紺単色 + 黄の人型 + 赤リボンのハート + 右下四芒星。帯の端を短く絞り「×印」の読みを回避。</p>
+      <div class="large"><img src="variant-a.png" alt="A案"></div>
+      <div class="homescreen">
+        <div class="app"><img src="variant-a.png" alt=""><span>みまも</span></div>
+        <div class="app"><div class="dummy"></div><span>&nbsp;</span></div>
+        <div class="app"><div class="dummy"></div><span>&nbsp;</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>B案 — ブランド統合案</h2>
+      <p>夜空グラデーション + 星の光跡が描くハート（終端が四芒星）+ 白い人型。リボンを光の表現に昇華。</p>
+      <div class="large"><img src="variant-b.png" alt="B案"></div>
+      <div class="homescreen">
+        <div class="app"><img src="variant-b.png" alt=""><span>みまも</span></div>
+        <div class="app"><div class="dummy"></div><span>&nbsp;</span></div>
+        <div class="app"><div class="dummy"></div><span>&nbsp;</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>C案 — 単純化案</h2>
+      <p>塗りのハート + 人型のネガティブスペース + 四芒星。小サイズ視認性を最優先した2階調構成。</p>
+      <div class="large"><img src="variant-c.png" alt="C案"></div>
+      <div class="homescreen">
+        <div class="app"><img src="variant-c.png" alt=""><span>みまも</span></div>
+        <div class="app"><div class="dummy"></div><span>&nbsp;</span></div>
+        <div class="app"><div class="dummy"></div><span>&nbsp;</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

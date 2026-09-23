@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- Android adaptive icon 背景レイヤー（全面塗り・白→ごく淡い桜＋微細星） -->
+  <defs>
+    <linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFF3F7"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#ground)"/>
+
+  <!-- 微細な星は外周トリミングで消えないよう、やや内側に配置 -->
+  <!-- 円形マスク（中央66%円）内に収まる位置に配置 -->
+  <g fill="#E9538A">
+    <circle cx="272" cy="336" r="7" opacity="0.45"/>
+    <circle cx="818" cy="578" r="6" opacity="0.4"/>
+    <circle cx="334" cy="756" r="6" opacity="0.35"/>
+    <path d="M 692 224 Q 692 254 722 254 Q 692 254 692 284 Q 692 254 662 254 Q 692 254 692 224 Z" opacity="0.55"/>
+  </g>
+</svg>

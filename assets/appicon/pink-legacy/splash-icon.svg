@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- スプラッシュ用（背景透過・マークを中央約40%に配置：既存 splash-icon.png の規模を踏襲）
+       注: 起動画面の背景は SplashScreen.storyboard の systemBackgroundColor と
+       android/app/src/main/res/values/colors.xml の splashscreen_background=#FFFFFF、
+       つまり白。旧版は金単色で白地に対し 1.6:1 しかなく、ほとんど見えていなかった。
+       濃ローズは白地 5.87:1・黒地 3.3:1 で、どちらの背景でも成立する。
+       アイコン本体と違い縁取りは置かない（背景色を問わず単色で成立させるため）。 -->
+  <defs>
+    <linearGradient id="trail" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C2185B"/>
+      <stop offset="100%" stop-color="#E9538A"/>
+    </linearGradient>
+  </defs>
+
+  <g transform="translate(204.8 207.2) scale(0.6)">
+    <path d="M 512 800
+             C 348 664, 240 548, 240 404
+             C 240 288, 332 230, 416 254
+             C 462 268, 498 304, 512 344
+             C 526 304, 562 268, 608 254
+             C 692 230, 784 288, 784 404
+             C 784 480, 748 548, 692 608"
+          fill="none" stroke="url(#trail)" stroke-width="46" stroke-linecap="round"/>
+
+    <path d="M 654 646 Q 654 700 708 700 Q 654 700 654 754 Q 654 700 600 700 Q 654 700 654 646 Z" fill="#C2185B"/>
+
+    <g fill="#C2185B" stroke="#C2185B" stroke-linecap="round">
+      <circle cx="512" cy="396" r="62" stroke="none"/>
+      <line x1="512" y1="512" x2="512" y2="616" stroke-width="106"/>
+      <line x1="512" y1="524" x2="428" y2="608" stroke-width="42"/>
+      <line x1="512" y1="524" x2="596" y2="608" stroke-width="42"/>
+      <line x1="498" y1="632" x2="470" y2="716" stroke-width="46"/>
+      <line x1="526" y1="632" x2="554" y2="716" stroke-width="46"/>
+    </g>
+  </g>
+</svg>

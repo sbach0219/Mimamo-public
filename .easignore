@@ -1,0 +1,20 @@
+# EAS Build にアップロードしないもの（ビルド側で再生成される/不要なもの）
+node_modules/
+
+# ネイティブディレクトリは EAS 側で app.json + config plugins から
+# クリーンに prebuild させる（ローカルの癖を持ち込まない managed Expo の標準手法）
+ios/
+android/
+
+.expo/
+dist/
+web-build/
+
+# Firebase Functions はアプリのビルドに不要
+functions/node_modules/
+
+# ローカル開発用
+*.log
+.DS_Store
+.vscode/
+.idea/

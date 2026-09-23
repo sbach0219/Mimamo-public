@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- みまも アプリアイコン（白×ピンク / A案・白地）
+       構図は night-legacy/icon.svg（夜空＋金の光跡）と同一。地と配色のみ差し替え。
+       地: 白→ごく淡い桜（#FFFFFF→#FFF3F7）。純白だと白い画面・ストア上でタイルの縁が消えるため。
+       光跡: #C2185B→#E9538A（白地で 5.87:1〜3.46:1）。人型: #C2185B（白地 5.87:1）。
+       人型には白の縁取りを敷き、光跡と重なる箇所でも輪郭が保たれるようにしている。
+       19pt 以下の文字に使ってよいピンクは rose/roseDeep のみという規約は文字向けで、
+       ここは大面積の図形のため roseSoft を光跡の明部に使う。 -->
+  <defs>
+    <linearGradient id="ground" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#FFF3F7"/>
+    </linearGradient>
+    <linearGradient id="trail" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C2185B"/>
+      <stop offset="100%" stop-color="#E9538A"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#ground)"/>
+
+  <!-- 背景の微細な星（控えめに） -->
+  <g fill="#E9538A">
+    <circle cx="176" cy="204" r="7" opacity="0.45"/>
+    <circle cx="856" cy="580" r="6" opacity="0.4"/>
+    <circle cx="248" cy="812" r="6" opacity="0.35"/>
+    <path d="M 836 160 Q 836 190 866 190 Q 836 190 836 220 Q 836 190 806 190 Q 836 190 836 160 Z" opacity="0.55"/>
+  </g>
+
+  <!-- ハート（星の光跡：右上の四芒星から描き始め、一周して閉じる手前で終わる） -->
+  <path d="M 512 800
+           C 348 664, 240 548, 240 404
+           C 240 288, 332 230, 416 254
+           C 462 268, 498 304, 512 344
+           C 526 304, 562 268, 608 254
+           C 692 230, 784 288, 784 404
+           C 784 480, 748 548, 692 608"
+        fill="none" stroke="url(#trail)" stroke-width="46" stroke-linecap="round"/>
+
+  <!-- 光跡の先端＝四芒星（アプリ内 star.svg と同じ言語） -->
+  <path d="M 654 646 Q 654 700 708 700 Q 654 700 654 754 Q 654 700 600 700 Q 654 700 654 646 Z" fill="#C2185B"/>
+
+  <!-- 人型の縁取り（地と同じ白。光跡の上を横切る箇所で輪郭を確保する） -->
+  <g fill="#FFFFFF" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="512" cy="396" r="62" stroke-width="20"/>
+    <line x1="512" y1="512" x2="512" y2="616" stroke-width="126"/>
+    <line x1="512" y1="524" x2="428" y2="608" stroke-width="62"/>
+    <line x1="512" y1="524" x2="596" y2="608" stroke-width="62"/>
+    <line x1="498" y1="632" x2="470" y2="716" stroke-width="66"/>
+    <line x1="526" y1="632" x2="554" y2="716" stroke-width="66"/>
+  </g>
+  <!-- 人型（濃ローズ・丸みを持たせたピクトグラム） -->
+  <g fill="#C2185B" stroke="#C2185B" stroke-linecap="round">
+    <circle cx="512" cy="396" r="62" stroke="none"/>
+    <line x1="512" y1="512" x2="512" y2="616" stroke-width="106"/>
+    <line x1="512" y1="524" x2="428" y2="608" stroke-width="42"/>
+    <line x1="512" y1="524" x2="596" y2="608" stroke-width="42"/>
+    <line x1="498" y1="632" x2="470" y2="716" stroke-width="46"/>
+    <line x1="526" y1="632" x2="554" y2="716" stroke-width="46"/>
+  </g>
+</svg>

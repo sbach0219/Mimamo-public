@@ -1,0 +1,39 @@
+# Files and directories copied by scripts/create-public-snapshot.sh.
+# Keep this list narrow. Internal handoffs, presentations, editor/agent settings,
+# production Firebase aliases, and platform credentials are intentionally excluded.
+.easignore
+.gitattributes
+.github
+.gitignore
+App.tsx
+CONTRIBUTING.md
+README.md
+SECURITY.md
+THIRD_PARTY_NOTICES.md
+app.json
+assets
+docs/automated-checks.md
+docs/public-source-review.md
+docs/legal
+docs/module-map.md
+docs/revenuecat-setup.md
+docs/universal-links-setup.md
+eas.json
+firebase.json
+firestore-tests
+firestore.indexes.json
+firestore.rules
+functions
+icon-assets
+index.ts
+jest.config.js
+metro.config.js
+package-lock.json
+package.json
+patches
+plugins
+public-files.txt
+scripts
+src
+tsconfig.json
+tsconfig.test.json

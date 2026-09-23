@@ -1,0 +1,8 @@
+# GitHub の言語統計（Linguist）から、アプリのコードでないものを除外する。
+# PR動画HTMLは動画をbase64で埋め込んだ17.5MBの1ファイルで、
+# これが無いとリポジトリの98%がHTML扱いになる。
+# パスに空白を含む場合はダブルクォートで囲む（囲まないと属性名として解釈されエラーになる）。
+"Mimamo PR動画.html" linguist-generated
+mimamo-pitch.html linguist-documentation
+website/** linguist-documentation
+src/icons/icons.generated.ts linguist-generated

@@ -1,0 +1,64 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.keystore
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# 生成物（HTMLから再生成できるPDF）
+docs/privacy-policy.pdf
+
+# firestore ルールテストの依存（ローカルで npm install する）
+firestore-tests/node_modules/
+
+# ローカル生成物（コミットしない）
+/work/agent-state/
+firestore-debug.log
+firebase-debug.log
+*.ipa
+thousandsky-website-*.zip
+
+# ローカルの環境変数（RevenueCat の公開キー等）。EAS の環境変数を正とする
+.env
+.env.*
+
+# Firebase client configuration is supplied per environment. These identifiers
+# are not server secrets, but public forks must not default to the production project.
+GoogleService-Info.plist
+google-services.json

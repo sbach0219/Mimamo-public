@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- ピンク案A: 地をローズのグラデに置換 / 光跡は淡ピンク・人型は白 -->
+  <!-- 構図・パスは assets/appicon/final/icon.svg と同一。色のみ差し替え -->
+  <defs>
+    <linearGradient id="rosesky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#E9538A"/>
+      <stop offset="55%" stop-color="#C2185B"/>
+      <stop offset="100%" stop-color="#8E1247"/>
+    </linearGradient>
+    <!-- 人型（純白）と溶けないよう、光跡はピンク寄りの淡色にする -->
+    <linearGradient id="trail" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F3A9C8"/>
+      <stop offset="100%" stop-color="#FFE7F0"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#rosesky)"/>
+
+  <!-- 背景の微細な星（控えめに） -->
+  <g fill="#FFFFFF">
+    <circle cx="176" cy="204" r="7" opacity="0.5"/>
+    <circle cx="856" cy="580" r="6" opacity="0.4"/>
+    <circle cx="248" cy="812" r="6" opacity="0.35"/>
+    <path d="M 836 160 Q 836 190 866 190 Q 836 190 836 220 Q 836 190 806 190 Q 836 190 836 160 Z" opacity="0.5"/>
+  </g>
+
+  <!-- ハート（星の光跡：右上の四芒星から描き始め、一周して閉じる手前で終わる） -->
+  <path d="M 512 800
+           C 348 664, 240 548, 240 404
+           C 240 288, 332 230, 416 254
+           C 462 268, 498 304, 512 344
+           C 526 304, 562 268, 608 254
+           C 692 230, 784 288, 784 404
+           C 784 480, 748 548, 692 608"
+        fill="none" stroke="url(#trail)" stroke-width="46" stroke-linecap="round"/>
+
+  <!-- 光跡の先端＝四芒星（アプリ内 star.svg と同じ言語） -->
+  <path d="M 654 646 Q 654 700 708 700 Q 654 700 654 754 Q 654 700 600 700 Q 654 700 654 646 Z" fill="#FFE7F0"/>
+
+  <!-- 人型（丸みを持たせたピクトグラム。地がピンクなので純白のまま） -->
+  <g fill="#FFFFFF" stroke="#FFFFFF" stroke-linecap="round">
+    <circle cx="512" cy="396" r="62" stroke="none"/>
+    <line x1="512" y1="512" x2="512" y2="616" stroke-width="106"/>
+    <line x1="512" y1="524" x2="428" y2="608" stroke-width="42"/>
+    <line x1="512" y1="524" x2="596" y2="608" stroke-width="42"/>
+    <line x1="498" y1="632" x2="470" y2="716" stroke-width="46"/>
+    <line x1="526" y1="632" x2="554" y2="716" stroke-width="46"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+{
+  "name": "mimamo-firestore-rules-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "firestore.rules の回帰テスト（Firestoreエミュレータ上で実行）",
+  "scripts": {
+    "test": "cd .. && firebase emulators:exec --only firestore --project mimamo-rules-test \"cd firestore-tests && jest --runInBand\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^4.0.1",
+    "firebase": "^11.0.0",
+    "jest": "^29.7.0"
+  }
+}

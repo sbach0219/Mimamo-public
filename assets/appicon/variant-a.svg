@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!-- A案: ユーザーコンセプト忠実案 / 濃紺単色 + 黄の人型 + 赤リボンのハート + 右下四芒星 -->
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="42%" r="75%">
+      <stop offset="0%" stop-color="#141A4D"/>
+      <stop offset="100%" stop-color="#0A0D33"/>
+    </radialGradient>
+    <linearGradient id="ribbon" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FF6B62"/>
+      <stop offset="100%" stop-color="#FF3B30"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1024" height="1024" fill="url(#bgGlow)"/>
+
+  <!-- 人型（黄・ピクトグラム調） -->
+  <g fill="#FFD60A" stroke="#FFD60A" stroke-linecap="round">
+    <circle cx="512" cy="352" r="74" stroke="none"/>
+    <!-- 胴 -->
+    <line x1="512" y1="494" x2="512" y2="632" stroke-width="124"/>
+    <!-- 腕（やや開いて下ろす） -->
+    <line x1="512" y1="510" x2="408" y2="614" stroke-width="50"/>
+    <line x1="512" y1="510" x2="616" y2="614" stroke-width="50"/>
+    <!-- 脚 -->
+    <line x1="492" y1="654" x2="444" y2="820" stroke-width="54"/>
+    <line x1="532" y1="654" x2="580" y2="820" stroke-width="54"/>
+  </g>
+
+  <!-- リボン（人物の前で交差し、頭の両脇でハートを描く） -->
+  <g fill="none" stroke="url(#ribbon)" stroke-width="52" stroke-linecap="round">
+    <!-- 短い帯で交差し、外側へ流す（×印の読みを避ける） -->
+    <path d="M 596 660 C 570 630, 544 604, 520 574 C 424 452, 314 430, 296 308 C 280 198, 400 172, 508 254"/>
+    <path d="M 428 660 C 454 630, 480 604, 504 574 C 600 452, 710 430, 728 308 C 744 198, 624 172, 516 254"/>
+  </g>
+
+  <!-- 右下の四芒星（アプリ内 star.svg と同じ凹み四芒星の言語） -->
+  <g opacity="0.9">
+    <path d="M 836 776 Q 836 830 890 830 Q 836 830 836 884 Q 836 830 782 830 Q 836 830 836 776 Z" fill="#FFD60A"/>
+    <circle cx="770" cy="884" r="7" fill="#FFFFFF" opacity="0.7"/>
+  </g>
+</svg>

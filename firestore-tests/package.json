@@ -7,7 +7,7 @@
     "test": "cd .. && firebase emulators:exec --only firestore --project mimamo-rules-test \"cd firestore-tests && jest --runInBand\""
   },
   "devDependencies": {
-    "@firebase/rules-unit-testing": "^4.0.1",
+    "@firebase/rules-unit-testing": "^5.0.2",
     "firebase": "^11.0.0",
     "jest": "^29.7.0"
   }
